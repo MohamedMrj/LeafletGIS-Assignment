@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Webmapp 201</title>
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="src/leaflet.css">
+    <link rel="stylesheet" href="src/css/bootstrap.css">
+    <link rel="stylesheet" href="src/plugins/L.Control.Zoomslider.css">
+    <link rel="stylesheet" href="src/plugins/L.Control.Sidebar.css">
+    <link rel="stylesheet" href="https://ppete2.github.io/Leaflet.PolylineMeasure/Leaflet.PolylineMeasure.css" />
+    <link rel="stylesheet" href="dist/MarkerCluster.css">
+    <link rel="stylesheet" href="dist/MarkerCluster.Default.css">
+<!------------------------------------------------------------------------->
+    <!-- JavaScript files -->
+    <script src="src/leaflet-src.js"></script>
+    <script src="src/jquery-3.6.0.min.js"></script>
+    <script src="src/turf.min.js" charset="utf-8"></script>
+    <script src="src/plugins/L.Control.Zoomslider.js"></script>
+    <script src="src/plugins/L.Control.Sidebar.js"></script>
+    <script src="src/plugins/Leaflet.PolylineMeasure.js"></script>
+    <script src="swedish_counties.js"></script>
+    <script src="countries.js"></script>
+    <script src="./supermarket.js"></script>
+    <script src="dist/leaflet.markercluster-src.js"></script>
+
+<!------------------------------------------------------------------------->
+        <!-- CSS styling -->
+    <style>
+        #mapdiv {
+            height: 89vh; 
+            width: 100vw;
+            }
+        
+        #side-bar {
+            background-color: #f2efe9;
+            padding:0px;
+            height:11vh;
+            width: 100%;
+            overflow-y: scroll;
+            text-align: center;
+            }
+        #side-bar h2 {
+            margin-top: 0px;
+        }
+        
+    </style>
+    </head>
+<!------------------------------------------------------------------------->
+    <body>
+        <!-- Map div -->
+        <div id="mapdiv" class="col-md-9"></div>
+        
+        <!-- Sidebar div -->
+        <div id="side-bar" class="col-md-3">
+            <h2>My Map</h2>
+            <button id="l1" class="btn btn-primary btn-block">Kupolen</button>
+            <button id="l2" class="btn btn-primary btn-block">SSAB Södra Porten</button>
+            <button id="l3" class="btn btn-primary btn-block">Borlänge Sjukhus</button>
+            <button id="l4" class="btn btn-primary btn-block">Hem</button>
+            <button id="l5" class="btn btn-primary btn-block">Leo's Lekland</button>
+            <button id="btnFalun" class="btn btn-primary btn-block">Zoom To Falun</button>
+            <button id="btnMeasure" class="btn btn-primary btn-block">Measure</button>
+            <button id="btnSweden" class="btn btn-primary btn-block">Zoom To Sweden</button>
+            <button id="btnUniversity" class="btn btn-primary btn-block">Zoom To University</button>
+            <button id="btnSupermarkets" class="btn btn-primary btn-block">Show Supermarkets</button>
+
+        </div>
+        
+        <!-- Leaflet sidebar div -->
+        <div id="sidebar">
+            <h1>leaflet-sidebar</h1>
+        </div>
+        
+        <!-- JavaScript code -->
+        <script>
+            // Initialize variables
+            var mymap; 
+            var lyrOSM; 
+            var mrkCurrentLocation;
+            var ctlZoomslider;
+            var swedishlayer = L.geoJson(swedish_counties);
+            var countrieslayer;
+            var ctlSlidebar;
+            var ctlMpolyline; 
+            var RasterL;
+            var popb;
+            var popf;
+            var supermarket;
+// create a red polyline from an array of LatLng points
+/*-----------------------------------------------------------------------------*/
+            $(document).ready(function() {
+                // Initialize Leaflet map with OpenStreetMap layer
+                mymap = L.map('mapdiv', {center:[60.48868922712431, 15.421371459960938], zoom:4});
+                lyrOSM= L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
+                mymap.addLayer(lyrOSM);
+
+/*-----------------------------------------------------------------------------*/
+
+/*-----------------------------------------------------------------------------*/
+                // Add zoom slider control to top right of the map
+                ctlZoomslider = L.control.zoomslider({position:'topright'}).addTo(mymap);
+/*-----------------------------------------------------------------------------*/
+                // Add sidebar control to left of the map
+                var sidebar = L.control.sidebar('sidebar', {position: 'left'});
+                mymap.addControl(sidebar);
+/*-----------------------------------------------------------------------------*/
+                // Add polyline measurement control to top left of the map
+                ctlMpolyline = L.control.polylineMeasure({position:'topleft', unit:'kilometres'}).addTo(mymap);
+/*-----------------------------------------------------------------------------*/
+/*-------------------------------CREATE A POLYGON (TJÄRNA)----------------------------------------------*/
+            var polygon = L.polygon([
+            [60.492753, 15.396359], [
+            60.490100, 15.402764],[
+            60.492932, 15.407699], [
+            60.495083, 15.402088],
+            [60.492753, 15.396359]
+            ]).addTo(mymap);
+            polygon.bindPopup("<img src='https://www.svtstatic.se/image/wide/992/18007667/1526294649?format=auto'>" + "<br>" + "Tjärna Ängar")
+/*-------------------------------CREATE A CIRCLE (IKEA)----------------------------------------------*/    
+            var circle = L.circle([60.48166145618139, 15.42139229738456], {
+            color: 'green',
+            fillColor: 'green',
+            fillOpacity: 0.5,
+            radius: 100
+            }).addTo(mymap);
+            circle.bindPopup("<img src='https://lh5.googleusercontent.com/p/AF1QipOwRpskWbCIOg5_VwAAWwLsGkJFhJNIhfn0idym=w426-h240-k-no'>" + "<br>" + "IKEA");
+/*-------------------------------CREATE A LINE (SIDEWALK)----------------------------------------------*/
+            var latlngs = [
+            [60.488219121194845, 15.407990239065187],
+            [60.4871198118631, 15.4119599081651],
+            ];
+            var polyline = L.polyline(latlngs, {color: 'red'}).addTo(mymap);
+            /*add a name to it*/ 
+            polyline.bindPopup("<img src='https://www.du.se/contentassets/3c03faebdbdf4b9c92ff3e26b5b9d830/img_0056.jpg?w=1066'>"+"<br>"+"Walkway beside the university");
+/*-------------------------------CREATE A POINT (UNIVERSITY)----------------------------------------------*/
+            var marker = L.marker([60.48703760310761, 15.41020814643187]).addTo(mymap);
+            marker.bindPopup("<img src='https://www.du.se/contentassets/3c03faebdbdf4b9c92ff3e26b5b9d830/img_0056.jpg?w=1066'>"+"<br>"+"Dalarna University");
+
+/*-----------------------------------------------------------------------------*/
+                // Define black icon for markers
+                var blackIcon = L.icon({
+                    iconUrl: 'map-marker.svg',
+                    iconSize: [32, 37],
+                    iconAnchor: [32, 37],
+                    popupAnchor: [0, -30]
+                });
+
+            
+/*------------------------ Add button click event to set view to Kupolen and point at it -----------------------------------------------------*/
+                // Add button click event to set view to Kupolen and point at it
+                $("#l1").click(function(){
+                    mymap.setView([60.48442602907933, 15.417753359662015], 17);
+                    popf = L.marker([60.48442602907933, 15.417753359662015], {icon:blackIcon}).addTo(mymap).bindPopup("KUPOLEN" + "<br>" + "Location: 60.48442602907933, 15.417753359662015")
+                    popb.openPopup();
+                });
+/*------------------------ Add button click event to set view to SSAB Södra Porten and point at it -----------------------------------------------------*/
+                // Add button click event to set view to SSAB Södra Porten and point at it
+                $("#l2").click(function(){
+                    mymap.setView([60.49008120270687, 15.449596545443125], 17);
+                    popf = L.marker([60.49008120270687, 15.449596545443125], {icon:blackIcon}).addTo(mymap).bindPopup("SSAB Södra Porten" + "<br>" + "Location: 60.49008120270687, 15.449596545443125")
+                    popb.openPopup();
+                });
+/*------------------------ Add button click event to set view to Borlänge Sjukhus and point at it -----------------------------------------------------*/
+                // Add button click event to set view to Borlänge Sjukhus and point at it
+                $("#l3").click(function(){
+                    mymap.setView([60.50329566456935, 15.465209683926208], 17);
+                    popf = L.marker([60.50329566456935, 15.465209683926208], {icon:blackIcon}).addTo(mymap).bindPopup("Borlänge Sjukhus" + "<br>" + "Location: 60.50329566456935, 15.465209683926208")
+                    popb.openPopup();
+                });
+/*------------------------ Add button click event to set view to Hem and point at it -----------------------------------------------------*/
+                // Add button click event to set view to Hem and point at it
+                $("#l4").click(function(){
+                    mymap.setView([60.49322019128727, 15.404310128061217], 17);
+                    popf = L.marker([60.49322019128727, 15.404310128061217], {icon:blackIcon}).addTo(mymap).bindPopup("Hem" + "<br>" + "Location: 60.49322019128727, 15.404310128061217")
+                    popb.openPopup();
+                });
+
+/*------------------------ Add button click event to set view to Leo's Lekland and point at it -----------------------------------------------------*/
+                // Add button click event to set view to Leo's Lekland and point at it
+                $("#l5").click(function(){
+                    mymap.setView([60.46947290875793, 15.459810674241842], 17);
+                    popf = L.marker([60.46947290875793, 15.459810674241842], {icon:blackIcon}).addTo(mymap).bindPopup("Leo's Lekland" + "<br>" + "Location: 60.46947290875793, 15.459810674241842")
+                    popb.openPopup();
+                });
+/*------------------------ Add button click event to set view to Falun and point at it -----------------------------------------------------*/
+                // Add button click event to set view to Falun and point at it
+                $("#btnFalun").click(function(){
+                    mymap.setView([60.60544553787564, 15.63281536102295], 13);
+                    popf = L.marker([60.60544553787564, 15.63281536102295], {icon:blackIcon}).addTo(mymap).bindPopup("Falun" + "<br>" + "Location: 60.60544553787564, 15.63281536102295")
+                    popb.openPopup();
+                });
+
+/*------------------------ Add button click event to set view to University and point at it -----------------------------------------------------*/
+                // Add button click event to set view to University and point at it
+                $("#btnUniversity").click(function(){
+                    mymap.setView([60.48703760310761, 15.41020814643187], 17);
+                    popf = L.marker([60.48703760310761, 15.41020814643187], {icon:blackIcon}).addTo(mymap).bindPopup("Dalarna University" + "<br>" + "Location: 60.48703760310761, 15.41020814643187")
+                    popb.openPopup();
+                });
+/*------------------------ Add button to ZoomToSweden -----------------------------------------------------*/
+$("#btnSweden").click(function(){
+    zoomToSweden();
+    });
+
+    function zoomToSweden() {
+        mymap.fitBounds(swedishlayer.getBounds());
+    }
+
+/*------------------------ Add button click event to measure distance -----------------------------------------------------*/
+$("#btnMeasure").click(function(){
+    measureLines();
+    });
+
+    function measureLines() {
+    const pMeasure = L.control.polylineMeasure({
+        position: "topleft",
+        clearMeasurementsOnStop: false
+    });
+    pMeasure.addTo(mymap);
+    
+    mymap.on("polylinemeasure:finish", (currentLine) => {
+        console.log(currentLine);
+    });
+    
+    const line1coords=[    [60.46947290875793, 15.459810674241842],
+        [60.60544553787564, 15.63281536102295],
+        [60.49322019128727, 15.404310128061217],
+        [60.50329566456935, 15.465209683926208],
+        [60.49008120270687, 15.449596545443125],
+        [60.48442602907933, 15.417753359662015]
+    ];
+    
+    // Gather all polylines into array of polyines
+    const polylines = [line1coords];
+    
+    polylines.forEach((polyline) => {
+      // toggle draw state on:
+        pMeasure._toggleMeasure();
+      // start line with first point of each polyline
+        pMeasure._startLine(polyline[0]);
+      // add subsequent points:
+        polyline.forEach((point, ind) => {
+        const latLng = L.latLng(point);
+        pMeasure._mouseMove({ latLng });
+        pMeasure._currentLine.addPoint(latLng);
+        // on last point,
+        if (ind === polyline.length - 1) {
+            pMeasure._finishPolylinePath();
+            pMeasure._toggleMeasure();
+        }
+        });
+    });
+    }
+
+/*------------------------Dalarna University with Image Overlay---------------------------------------------------*/
+
+    // Define the corners of the image, in LatLng coordinates
+    var corner1 = L.latLng(60.48705244446031, 15.411884961589204);
+    var corner2 = L.latLng(60.48655034261861, 15.411174176212949);
+    var corner3 = L.latLng(60.487671481569855, 15.407828342872552);
+    var corner4 = L.latLng(60.48819470628419, 15.408536446042442);
+    var bounds = L.latLngBounds(corner4, corner1, corner2, corner3);
+    
+    // Create the image overlay layer
+    var imageUrl = './univ.PNG';
+    var imageOverlay = L.imageOverlay(imageUrl, bounds).addTo(mymap);
+
+    
+/*--------------------------------------------------------------------------------------------------------------------------------------------*/
+    // Add an event listener to the button
+        document.getElementById("btnSupermarkets").addEventListener("click", function() {
+            var nonOverlapping = L.layerGroup().addTo(mymap);
+            
+            $.getJSON("supermarket.geoJSON", function(data) {
+            // Create a Leaflet GeoJSON layer for the supermarkets
+            var supermarkets = L.geoJSON(data, {
+                onEachFeature: function(feature, layer) {
+                // Display the name of the supermarket using a popup
+                layer.bindPopup(feature.properties.name);
+                }
+            });
+            
+            // Create an empty array to hold the supermarket buffers
+            var supermarketBuffers = [];
+            
+            // Loop through each feature in the supermarket layer
+            supermarkets.eachLayer(function(layer) {
+                // Calculate a buffer around the supermarket point
+                var buffer = turf.buffer(layer.toGeoJSON(), 1, {units: 'kilometers'});
+                
+                // Check if the buffer intersects with any previously calculated buffer
+                var intersect = false;
+                for (var i = 0; i < supermarketBuffers.length; i++) {
+                if (turf.intersect(buffer, supermarketBuffers[i])) {
+                    intersect = true;
+                    break;
+                }
+        }
+        
+                // If the buffer does not intersect with any previous buffer, add it to the non-overlapping layer group
+                if (!intersect) {
+                var bufferLayer = L.geoJSON(buffer, {
+                    style: {
+                    color: 'red',
+                    weight: 2
+                    },
+                    onEachFeature: function(feature, layer) {
+                    layer.bindPopup(feature.properties.name + " (buffer)");
+                    }
+                });
+                nonOverlapping.addLayer(layer);
+                nonOverlapping.addLayer(bufferLayer);
+                
+                // Add the buffer to the array of supermarket buffers
+                supermarketBuffers.push(buffer);
+                }
+                // If the buffer intersects with a previous buffer, add the supermarket to the supermarkets layer group
+                else {
+                supermarkets.addLayer(layer);
+                }
+            });
+            
+            // Add the non-overlapping and supermarkets layer groups to the map
+            mymap.addLayer(nonOverlapping);
+            mymap.addLayer(supermarkets);
+            });
+        });
+        
+
+
+});
+
+
+    </script>
+    </body>
+</html>

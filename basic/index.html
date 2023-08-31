@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Basic</title>
+        <link rel="stylesheet" href="src/leaflet.css">
+        <link rel="stylesheet" href="src/css/bootstrap.css">
+        <script src="src/leaflet-src.js"></script>
+        <script src="src/jquery-3.6.0.min.js"></script>
+               
+        
+        <style>
+            #mapdiv {
+                height: 100vh;
+				
+            }  
+            
+                        
+        </style>
+    </head>
+    <body>
+       <div id="mapdiv" class="col-md-9"></div>
+       
+       <div id="side-bar" class="col-md-3"><h2>My Map</h2>
+        </div>
+       
+        
+       <script>
+            var mymap; 
+            var lyrOSM; 
+            
+            $(document).ready(function(){
+                mymap = L.map('mapdiv', {center:[60.60544553787564, 15.63281536102295], zoom:13});
+				         
+                lyrOSM= L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
+                mymap.addLayer(lyrOSM);
+            });
+       </script>
+    </body>
+</html>
